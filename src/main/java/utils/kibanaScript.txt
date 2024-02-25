@@ -1,0 +1,39 @@
+# Click the Variables button, above, to create your own variables.
+GET transaction/_search
+
+POST _reindex
+{
+  "source": {
+    "index": "transaction"
+  },
+  "dest": {
+    "index": "transaction_part1"
+  },
+  "script": {
+    "source": """
+    ctx._source.transactionDate = new Date(ctx._source.transactionDate).toString();
+    """
+  }
+}
+
+GET transaction_part1/_search
+
+POST _reindex
+{
+  "source": {
+    "index": "transaction"
+  },
+  "dest": {
+    "index": "transaction_new"
+  },
+  "script": {
+    "source": """
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+    sdf.setTimeZone(TimeZone.getTimeZone('IST'));
+    ctx._source.transactionDate = sdf.format(new Date(ctx._source.transactionDate));
+    """
+  }
+}
+
+
+GET transaction_new/_search
